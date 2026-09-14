@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "First deploy",
-  description: "Next.js app for learning GitHub + Vercel",
+  title: "Baie Marcantonio",
+  description: "A simple personal site.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
