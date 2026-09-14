@@ -157,7 +157,7 @@ export function CatGame() {
     function resize() {
       const parent = canvas.parentElement;
       const w = parent?.clientWidth || window.innerWidth;
-      const h = Math.min(window.innerHeight, 560);
+      const h = window.innerHeight;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       width = w;
       height = Math.max(h, 320);
@@ -294,10 +294,10 @@ export function CatGame() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col bg-[#f4f4f4]">
+    <main className="h-[100dvh] overflow-hidden bg-[#f4f4f4]">
       <canvas
         ref={canvasRef}
-        className="block h-[min(100dvh,560px)] w-full touch-none"
+        className="block h-[100dvh] w-full touch-none"
         aria-label="Cat runner game. Tap or press space to jump."
       />
     </main>
