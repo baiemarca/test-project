@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Baie Marcantonio",
-  description: "A simple personal site.",
+  title: "Cat Run",
+  description: "A Chrome dino-style game with a cat and black obstacles.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
