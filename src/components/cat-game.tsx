@@ -28,11 +28,40 @@ type Game = {
 const GROUND = 0.78;
 const GRAVITY = 0.75;
 const JUMP = -13.5;
-const CAT_W = 46;
-const CAT_H = 32;
+const CAT_W = 56;
+const CAT_H = 52;
 
 function pad(n: number) {
   return String(Math.floor(n)).padStart(5, "0");
+}
+
+function ellipse(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+) {
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function ear(
+  ctx: CanvasRenderingContext2D,
+  tipX: number,
+  tipY: number,
+  leftX: number,
+  leftY: number,
+  rightX: number,
+  rightY: number,
+) {
+  ctx.beginPath();
+  ctx.moveTo(tipX, tipY);
+  ctx.lineTo(leftX, leftY);
+  ctx.lineTo(rightX, rightY);
+  ctx.closePath();
+  ctx.fill();
 }
 
 function drawCat(
@@ -42,30 +71,77 @@ function drawCat(
   frame: number,
   jumping: boolean,
 ) {
-  const y = feetY - CAT_H;
-  const run = jumping ? 0 : Math.floor(frame / 6) % 2;
+  const cx = x + CAT_W / 2;
+  const cy = feetY - 26;
+  const bounce = jumping ? -2 : Math.sin(frame / 5) * 1.2;
+  const headY = cy + bounce;
+  const blink = !jumping && frame % 90 < 6;
+
   ctx.fillStyle = "#111111";
+  ear(ctx, cx - 18, headY - 28, cx - 24, headY - 6, cx - 8, headY - 12);
+  ear(ctx, cx + 18, headY - 28, cx + 8, headY - 12, cx + 24, headY - 6);
 
-  ctx.fillRect(x + 10, y + 10, 26, 16);
-  ctx.fillRect(x + 28, y + 2, 16, 16);
-  ctx.fillRect(x + 30, y - 4, 6, 8);
-  ctx.fillRect(x + 38, y - 4, 6, 8);
-  ctx.fillRect(x + 40, y + 6, 8, 4);
-  ctx.fillRect(x + 4, y + 12, 10, 4);
+  ellipse(ctx, cx, headY, 22, 20);
 
-  if (jumping) {
-    ctx.fillRect(x + 12, y + 24, 8, 8);
-    ctx.fillRect(x + 26, y + 24, 8, 8);
-    ctx.fillRect(x + 2, y + 8, 12, 4);
-  } else if (run === 0) {
-    ctx.fillRect(x + 12, y + 24, 7, 10);
-    ctx.fillRect(x + 28, y + 26, 7, 8);
-    ctx.fillRect(x, y + 14, 12, 4);
+  ctx.fillStyle = "#f4f4f4";
+  ear(ctx, cx - 18, headY - 22, cx - 20, headY - 8, cx - 11, headY - 11);
+  ear(ctx, cx + 18, headY - 22, cx + 11, headY - 11, cx + 20, headY - 8);
+
+  if (blink) {
+    ctx.strokeStyle = "#111111";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx - 12, headY - 2);
+    ctx.lineTo(cx - 4, headY - 2);
+    ctx.moveTo(cx + 4, headY - 2);
+    ctx.lineTo(cx + 12, headY - 2);
+    ctx.stroke();
   } else {
-    ctx.fillRect(x + 14, y + 26, 7, 8);
-    ctx.fillRect(x + 26, y + 24, 7, 10);
-    ctx.fillRect(x + 2, y + 16, 10, 3);
+    ctx.fillStyle = "#f4f4f4";
+    ellipse(ctx, cx - 8, headY - 3, 6, jumping ? 7 : 6);
+    ellipse(ctx, cx + 8, headY - 3, 6, jumping ? 7 : 6);
+    ctx.fillStyle = "#111111";
+    const look = jumping ? -1 : 1;
+    ellipse(ctx, cx - 8 + look, headY - 2, 2.4, 3.2);
+    ellipse(ctx, cx + 8 + look, headY - 2, 2.4, 3.2);
+    ctx.fillStyle = "#ffffff";
+    ellipse(ctx, cx - 9 + look, headY - 4, 1.1, 1.3);
+    ellipse(ctx, cx + 7 + look, headY - 4, 1.1, 1.3);
   }
+
+  ctx.fillStyle = "#111111";
+  ctx.beginPath();
+  ctx.moveTo(cx, headY + 4);
+  ctx.lineTo(cx - 4, headY + 9);
+  ctx.lineTo(cx + 4, headY + 9);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = "#111111";
+  ctx.lineWidth = 1.5;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(cx - 5, headY + 7);
+  ctx.lineTo(cx - 22, headY + 3);
+  ctx.moveTo(cx - 5, headY + 9);
+  ctx.lineTo(cx - 22, headY + 9);
+  ctx.moveTo(cx - 5, headY + 11);
+  ctx.lineTo(cx - 20, headY + 15);
+  ctx.moveTo(cx + 5, headY + 7);
+  ctx.lineTo(cx + 22, headY + 3);
+  ctx.moveTo(cx + 5, headY + 9);
+  ctx.lineTo(cx + 22, headY + 9);
+  ctx.moveTo(cx + 5, headY + 11);
+  ctx.lineTo(cx + 20, headY + 15);
+  ctx.stroke();
+
+  ctx.beginPath();
+  if (jumping) {
+    ctx.arc(cx, headY + 13, 5, 0.15 * Math.PI, 0.85 * Math.PI);
+  } else {
+    ctx.arc(cx, headY + 11, 4, 0.15 * Math.PI, 0.85 * Math.PI);
+  }
+  ctx.stroke();
 }
 
 function drawObstacle(
@@ -100,9 +176,9 @@ function spawn(width: number): Obstacle {
 }
 
 function hits(catX: number, catY: number, o: Obstacle, groundY: number) {
-  const catTop = catY - CAT_H + 6;
-  const catLeft = catX + 6;
-  const catRight = catX + CAT_W - 6;
+  const catTop = catY - CAT_H + 8;
+  const catLeft = catX + 8;
+  const catRight = catX + CAT_W - 8;
   const catBottom = catY - 2;
   const oLeft = o.x + 2;
   const oRight = o.x + o.w - 2;
